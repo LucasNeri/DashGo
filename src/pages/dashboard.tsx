@@ -1,64 +1,45 @@
-import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
-import dynamic from "next/dynamic";
+import { Box, Flex, Heading, Progress } from "@chakra-ui/react";
 import { Sidebar } from "../components/Sidebar/index";
 import { Header } from "../components/Header";
-
-const Chart = dynamic(() => import('react-apexcharts'), {
-    ssr: false,
-})
-
-const options = {
-    chart: {
-        toolbar: {
-            show: false,
-        },
-        zoom: {
-            enabled: false
-        }, 
-        foreColor: theme.colors.gray[500],
-    },
-    grid: {
-        show: false,
-    },
-    dataLabels: {
-        enabled: false
-    },
-    tooltip: {
-        enabled: false
-    }, 
-    xaxis: {
-        type: 'datetime',
-        axisBorder: {
-            color: theme.colors.gray[600]
-        },
-        axisTicks: {
-            color: theme.colors.gray[600]
-        },
-        categories: [
-            '2021-03-18T00:00:00.000Z',
-            '2021-03-19T00:00:00.000Z',
-            '2021-03-20T00:00:00.000Z',
-            '2021-03-21T00:00:00.000Z',
-            '2021-03-22T00:00:00.000Z',
-            '2021-03-23T00:00:00.000Z',
-            '2021-03-24T00:00:00.000Z',
-        ],
-    },
-    fill: {
-        opacity: 0.3,
-        type: 'gradient',
-        gradient: {
-            shade: 'dark',
-            opacityFrom: 0.7,
-        }
-    }
-};
-
-const series = [
-    { name: 'series1', data: [31, 120, 10, 28, 61, 18, 109]}
-]
+import { AttTable } from "../components/Lawers/AttTable";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import api from "../services/api";
 
 export default function Dashboard() {
+    const [lawers, setLawers] = useState()
+    const [isLoading, setIsLoading] = useState(false)
+    let router = useRouter();
+
+    useEffect(()=>{
+        loadLawersAt()
+        if(!router.isReady) return;
+    }, [router.isReady]);
+
+
+    async function loadLawersAt() {
+        setIsLoading(false)
+        let url = `/api/getLawers?page=1&size=5`
+
+        api.get(url).then(res => {
+            setTimeout(() => {
+                setLawers(res.data.data.docs)
+                setIsLoading(true)
+            }, 1000)
+        }).catch(err => {
+            console.log(err)
+        })
+        setTimeout(() => {
+            if (window.location.href.split('/')[3] == undefined) {
+                if (router.route == '/dashboard') {
+                    loadLawersAt()
+                }
+            } else if (window.location.href.split('/')[3] == 'dashboard'){ 
+                loadLawersAt()
+            }
+        }, 5000)
+    }
+
     return (
         <Flex direction='column' h='100vh'>
             <Header />
@@ -66,24 +47,15 @@ export default function Dashboard() {
             <Flex w='100%' my='6' maxWidth={1480} mx='auto' px='6'>
                 <Sidebar />
 
-                <SimpleGrid flex='1' gap='4' minChildWidth='320px' align='flex-start'>
-                    <Box
-                        p={['6', '8']}
-                        bg='gray.800'
-                        borderRadius={8}
-                    >
-                        <Text fontSize='lg' mb='4'>Inscritos da semana</Text>
-                        <Chart options={options} series={series} type="area" height={160} />
-                    </Box>
-                    <Box
-                        p={['6', '8']}
-                        bg='gray.800'
-                        borderRadius={8}
-                    >
-                        <Text fontSize='lg' mb='4'>Taxa de Abertura</Text>
-                        <Chart options={options} series={series} type="area" height={160} />
-                    </Box>
-                </SimpleGrid>
+                <Box flex='1' borderRadius={8} bg='gray.800' p='8'>
+                    <Flex mb='8' justify='space-between' align='center'>
+                        <Heading size='lg' fontWeight='normal'>Últimos Advogados Cadastrados</Heading>
+                    </Flex>
+                    
+
+                    <Progress size='xs' isIndeterminate mb={5} hidden={isLoading}/>
+                    <AttTable lawers={lawers} loadLawers={loadLawersAt}/>
+                </Box>
             </Flex>
         </Flex>
     )

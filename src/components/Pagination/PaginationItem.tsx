@@ -3,11 +3,17 @@ import { Button } from "@chakra-ui/react"
 interface PaginationItemProps {
     number: number;
     isCurrent?: boolean;
+    loadLawers: (page:any, sortDate: boolean, sortName: boolean) => void
+    isSortDate: boolean
+    isSortName: boolean
 }
 
 export function PaginationItem({
     isCurrent = false,
-    number 
+    number,
+    loadLawers,
+    isSortDate,
+    isSortName
 }: PaginationItemProps) {
     if (isCurrent) {
         return (
@@ -21,6 +27,7 @@ export function PaginationItem({
                     bg: 'pink.500',
                     cursor: 'default',
                 }}
+                onClick = {() => loadLawers(number, isSortDate, isSortName)}
             >
                 {number}
             </Button>    
@@ -36,6 +43,7 @@ export function PaginationItem({
             _hover={{
                 bg: 'gray.500'
             }}
+            onClick = {() => loadLawers(number, isSortDate, isSortName)}
         >
             {number}
         </Button>

@@ -1,7 +1,17 @@
-import { Box, Button, Stack } from "@chakra-ui/react";
-import { PaginationItem } from "./PaginationItem";
+import { Box, Stack } from "@chakra-ui/react";
+import { PaginationConditional } from "./PaginationConditional";
+import { PaginationMoviment } from "./PaginationMoviment";
 
-export function Pagination() {
+interface PaginationProps {
+    total: number
+    offset: number
+    pages: number
+    loadLawers: (page:any, sortDate: boolean, sortName: boolean) => void
+    isSortDate: boolean
+    isSortName: boolean
+}
+
+export function Pagination({total, offset, pages, loadLawers, isSortDate, isSortName }: PaginationProps) {
     return (
         <Stack
             direction={['column', 'row']}
@@ -11,15 +21,12 @@ export function Pagination() {
             spacing='6'
         >
             <Box>
-                <strong>0</strong> - <strong>10</strong> de <strong>100</strong>
+                <strong>{offset}</strong> - <strong>{ Math.min((offset + 10), total) }</strong> de <strong>{total}</strong>
             </Box>
             <Stack direction='row' spacing='2'>
-                <PaginationItem number={1} isCurrent />
-                <PaginationItem number={2} />
-                <PaginationItem number={3} />
-                <PaginationItem number={4} />
-                <PaginationItem number={5} />
-                <PaginationItem number={6} />
+                <PaginationMoviment page={(offset/10) + 1} total_pages={pages} before={true} loadLawers={loadLawers} isSortDate={isSortDate} isSortName={isSortName}/>
+                <PaginationConditional offset={offset} pages={pages} loadLawers={loadLawers} isSortDate={isSortDate} isSortName={isSortName}/>
+                <PaginationMoviment page={(offset/10) + 1} total_pages={pages} before={false} loadLawers={loadLawers} isSortDate={isSortDate} isSortName={isSortName}/>
             </Stack>
         </Stack>
     );
